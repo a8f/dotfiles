@@ -18,3 +18,13 @@ cds(){
     ls -l --color=always | less -R
 }
 
+mkent(){
+    mkdir "$1"
+    cd "$1"
+}
+
+cls(){
+    clear
+    ls "$1"
+}
+
