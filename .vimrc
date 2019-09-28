@@ -38,6 +38,7 @@ Plugin 'xuhdev/vim-latex-live-preview'
 Plugin 'scrooloose/nerdcommenter'
 Plugin 'neovimhaskell/haskell-vim'
 Plugin 'dense-analysis/ale'
+Plugin 'isthisnagee/vim-488', { 'for': '488' }
 call vundle#end()
 let g:airline#extensions#ale#enabled = 1
 let g:ycm_autoclose_preview_window_after_completion=1
@@ -49,5 +50,5 @@ let g:NERDCompactSexyComs = 1
 nnoremap <Leader>ht :GhcModType<cr>
 nnoremap <Leader>htc :GhcModTypeClear<cr>
 autocmd FileType haskell nnoremap <buffer> <leader>? :call ale#cursor#ShowCursorDetail()<cr>
-
-
+autocmd BufNewFile,BufRead *.488 set filetype=488
+let g:ale_fixers = {'*': ['remove_trailing_lines', 'trim_whitespace'],'javascript': ['eslint'],'haskell': ['brittany']}
