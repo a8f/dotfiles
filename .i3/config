@@ -34,7 +34,7 @@ set $right l
 floating_modifier Mod4
 
 # start a terminal
-bindsym Mod4+Return exec i3-sensible-terminal
+bindsym Mod4+Return exec sakura
 
 # kill focused window
 bindsym Mod4+Shift+q kill
@@ -196,10 +196,9 @@ bindsym XF86MonBrightnessUp exec xbacklight -inc 10 # increase screen brightness
 bindsym XF86MonBrightnessDown exec xbacklight -dec 10 # decrease screen brightness
 
 # Startup applications
-exec --no-startup-id feh --bg-fill ~/Picture/wallpapers/10-14-Night.jpg
-
-#exec --no-startup-id nm-applet
+exec --no-startup-id ~/.fehbg
+exec --no-startup-id compton
 
 bindsym Mod1+Tab exec --no-startup-id rofi -modi combi -combi-modi window -show combi
-#for_window [class=".*"] border pixel 2
+for_window [class=".*"] border pixel 2
 smart_borders yes
