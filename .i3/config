@@ -34,7 +34,7 @@ set $right l
 floating_modifier Mod4
 
 # start a terminal
-bindsym Mod4+Return exec sakura
+bindsym Mod4+Return exec termite
 
 # kill focused window
 bindsym Mod4+Shift+q kill
@@ -197,8 +197,12 @@ bindsym XF86MonBrightnessDown exec xbacklight -dec 10 # decrease screen brightne
 
 # Startup applications
 exec --no-startup-id ~/.fehbg
-exec --no-startup-id compton
+exec --no-startup-id picom
+exec --no-startup-id xvisbell &
 
 bindsym Mod1+Tab exec --no-startup-id rofi -modi combi -combi-modi window -show combi
-for_window [class=".*"] border pixel 2
+for_window [class=".*"] border pixel 0
+gaps inner 4
+gaps outer -4  # outer = -inner so there are no gaps on the side
 smart_borders yes
+smart_gaps on
