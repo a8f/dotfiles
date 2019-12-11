@@ -18,42 +18,48 @@ set mouse=a
 set autoindent
 set hidden
 set confirm
-let python_highlight_all=1
+set completeopt-=preview
 autocmd FileType text setlocal spell
+set foldmethod=indent
+set foldlevelstart=2
+set foldnestmax=2
+set hlsearch
+autocmd BufRead,BufNewFile *.py let python_highlight_all=1
+
+"Keep all folds open when a file is opened
+augroup OpenAllFoldsOnFileOpen
+    autocmd!
+    autocmd BufRead * normal zR
+augroup END
+
 "Enable 24-bit colour (credit GitHub/joshdick)
 if (empty($TMUX))
   if (has("nvim"))
-  "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1
   endif
-  "For Neovim > 0.1.5 and Vim > patch 7.4.1799 < https://github.com/vim/vim/commit/61be73bb0f965a895bfb064ea3e55476ac175162 >
-  "Based on Vim patch 7.4.1770 (`guicolors` option) < https://github.com/vim/vim/commit/8a633e3427b47286869aa4b96f2bfc1fe65b25cd >
-  " < https://github.com/neovim/neovim/wiki/Following-HEAD#20160511 >
   if (has("termguicolors"))
     set termguicolors
   endif
 endif
 
+"Enter insert mode with smart indent
+function! IndentA()
+    if len(getline('.')) == 0
+        return "\"_cc"
+    else
+        return "a"
+    endif
+endfunction
 
-"Keybinds
+" Go to last location when reopening file
+" If this doesn't work maybe you don't have perms for ~/.viminfo?
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal! g'\"" | endif
+endif
 
-
-"Scroll display lines
-nnoremap j gj
-nnoremap k gk
-" down and up with J and K
-nnoremap <S-j> <C-d>
-nnoremap <S-k> <C-u>
-" ctrl + s to save
-inoremap <C-s> <esc>:w<cr>
-nnoremap <C-s> :w<cr>
-" ctrl + z to undo (if environment doesn't interpret it as background)
-imap <C-z> <Esc>:u<CR>a
-" Leader + y to yank to system clipboard
-nnoremap <leader>y "+y
-" Space for completion
-inoremap <Nul> <C-x><C-o>
-map <C-N> :NERDTreeToggle<CR>
+"Clear search when opening new buffer
+autocmd bufnewfile,bufread,bufenter :let @/ = ""<CR>
 
 
 "Plugins
@@ -62,15 +68,17 @@ map <C-N> :NERDTreeToggle<CR>
 " ALE settings
 " Set before loading ALE
 let g:ale_completion_enabled = 1
-let g:ale_set_balloons = 1
-set omnifunc=ale#completion#OmniFunc
 let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
                         \'javascript': ['eslint'],
-                        \'haskell': ['brittany']}
-" Only run linters listed below
-let g:ale_linters_explicit = 1
-let g:ale_linters = {'c': ['gcc', 'clangd']}
+                        \'haskell': ['brittany'],
+                        \'c': ['uncrustify']}
+let g:ale_linters_explicit = 1 " Only run the linters below
+let g:ale_linters = {'c': ['gcc', 'clangd'],
+            \'haskell': ['ghc', 'hlint']}
+let g:ale_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
+let g:ale_fix_on_save = 1
 let g:ale_c_parse_compile_commands = 1
+let g:ale_set_balloons = 1
 " Makefile after compile_commands to override
 let g:ale_c_parse_makefile = 1
 " No gcc options, load from makefile or compile_commands.json
@@ -80,15 +88,10 @@ let g:ale_sign_error = '>'
 let g:ale_sign_warning = '-'
 " Autocompletion
 let g:ale_completion_enabled = 1
-let g:ale_completion_max_suggestions = 50
-let g:ale_completion_delay = 3
-let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'int']
-" ALE related keybinds
-nnoremap <leader>l :ALEFix<return>
-nnoremap <leader>d :call ale#definition#GoTo({'open_in': 'horizontal-split'})<return>
-nnoremap <leader>z :call ale#definition#GoTo({})<return>
-nnoremap <leader>r :call ale#references#Find()<return>
-nnoremap <buffer> <leader>q :call ale#cursor#ShowCursorDetail()<cr>
+let g:ale_completion_max_suggestions = 200
+let g:ale_completion_delay = 2000
+let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'int', 'for', 'in']
+autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
 
 " Airline settings
 let g:airline#extensions#ale#enabled=1
@@ -102,8 +105,23 @@ let g:airline_powerline_fonts = 1
 " Nerdtree/Nerdcommenter settings
 let NERDTreeQuitOnOpen=1
 let g:NERDCompactSexyComs =1
+let g:NERDCommentEmptyLines = 1
 " Quit if nerdtree is the only thing open
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+"Sneak
+let g:sneak#s_next = 1
+let g:sneak#use_ic_scs = 1
+let g:sneak#label = 1
+
+"Taglist
+let Tlist_Close_On_Select = 1
+
+"Bracket matches
+let g:matchup_matchparen_offscreen = { 'method': 'popup' }
+let g:matchup_matchparen_deferred = 1
+let g:matchup_matchparen_hi_surround_always = 1
+
 
 " Load Vundle + plugins
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -121,7 +139,11 @@ Plugin 'sheerun/vim-polyglot'
 Plugin 'w0ng/vim-hybrid'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'scrooloose/nerdtree'
-"Plugin 'tpope/vim-sleuth'
+Plugin 'vim-scripts/taglist.vim'
+Plugin 'haya14busa/incsearch.vim'
+Plugin 'justinmk/vim-sneak'
+Plugin 'rhysd/accelerated-jk'
+Plugin 'andymass/vim-matchup'
 call vundle#end()
 
 
@@ -132,3 +154,48 @@ colorscheme hybrid
 set background=dark
 let g:airline_theme = "hybrid"
 hi Normal guibg=NONE ctermbg=NONE
+
+
+"Keybinds
+
+
+"Auto-indent when using a
+nnoremap <expr> a IndentA()
+"Scroll display lines
+nnoremap j gj
+nnoremap k gk
+"down and up with J and K
+nnoremap <S-j> <C-d>
+nnoremap <S-k> <C-u>
+"ctrl + s to save
+inoremap <C-s> <esc>:w<cr>
+nnoremap <C-s> :w<cr>
+"ctrl + z to undo (if environment doesn't interpret it as background)
+imap <C-z> <Esc>:u<CR>a
+"Leader + y to yank to system clipboard
+nnoremap <leader>y "+y
+" q instead of b
+nnoremap q b
+nnoremap <S-q> <S-b>
+"Space for completion
+inoremap <C-@> <C-X><C-O>
+nnoremap <C-S-N> :NERDTreeToggle<CR>
+"Buffer navigation
+nnoremap <C-n> :bn<CR>
+nnoremap <C-b> :bp<CR>
+"When popup is visible use tab to cycle through suggestions
+inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
+"Press return again to disable highlighting after searching
+nnoremap <silent><CR> :noh<CR><CR>
+" ALE related keybinds
+nnoremap <leader>l :ALEFix<return>
+nnoremap <leader>d :call ale#definition#GoTo({})<return>
+nnoremap v :call ale#definition#GoTo({'open_in': 'horizontal-split'})<return>
+nnoremap <leader>r :call ale#references#Find()<return>
+nnoremap <buffer> <leader>q :call ale#cursor#ShowCursorDetail()<cr>
+"Incsearch
+nnoremap /  <Plug>(incsearch-forward)
+nnoremap ?  <Plug>(incsearch-backward)
+nnoremap g/ <Plug>(incsearch-stay)
+"Taglist
+nnoremap <C-t> :TlistOpen<CR>
