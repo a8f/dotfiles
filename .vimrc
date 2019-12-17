@@ -4,7 +4,7 @@ syntax on
 set nocompatible
 set noshowmode
 set laststatus=2
-set encoding=utf-8
+"set encoding=utf-8
 set splitright
 set splitbelow
 set nu
@@ -24,6 +24,8 @@ set foldmethod=indent
 set foldlevelstart=2
 set foldnestmax=2
 set hlsearch
+set incsearch
+set completeopt=menu,menuone,noselect,noinsert
 autocmd BufRead,BufNewFile *.py let python_highlight_all=1
 
 "Keep all folds open when a file is opened
@@ -71,14 +73,16 @@ let g:ale_completion_enabled = 1
 let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
                         \'javascript': ['eslint'],
                         \'haskell': ['brittany'],
-                        \'c': ['uncrustify']}
+                        \'c': ['uncrustify'],
+                        \'python': ['isort', 'autopep8']}
 let g:ale_linters_explicit = 1 " Only run the linters below
 let g:ale_linters = {'c': ['gcc', 'clangd'],
-            \'haskell': ['ghc', 'hlint']}
+            \'haskell': ['ghc', 'hlint'],
+            \'python': ['flake8', 'pylint', 'bandit']}
 let g:ale_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
 let g:ale_fix_on_save = 1
-let g:ale_c_parse_compile_commands = 1
 let g:ale_set_balloons = 1
+let g:ale_c_parse_compile_commands = 1
 " Makefile after compile_commands to override
 let g:ale_c_parse_makefile = 1
 " No gcc options, load from makefile or compile_commands.json
@@ -87,11 +91,11 @@ let g:ale_c_gcc_options = ''
 let g:ale_sign_error = '>'
 let g:ale_sign_warning = '-'
 " Autocompletion
-let g:ale_completion_enabled = 1
-let g:ale_completion_max_suggestions = 200
-let g:ale_completion_delay = 2000
+let g:ale_completion_enabled = 0
+let g:ale_completion_max_suggestions = 1500
+let g:ale_completion_delay = 1000
 let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'int', 'for', 'in']
-autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
+"autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
 
 " Airline settings
 let g:airline#extensions#ale#enabled=1
@@ -120,8 +124,11 @@ let Tlist_Close_On_Select = 1
 "Bracket matches
 let g:matchup_matchparen_offscreen = { 'method': 'popup' }
 let g:matchup_matchparen_deferred = 1
-let g:matchup_matchparen_hi_surround_always = 1
 
+"Deoplete
+let g:deoplete#enable_at_startup = 1
+
+let g:polyglot_disabled = ['latex']
 
 " Load Vundle + plugins
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -142,9 +149,19 @@ Plugin 'scrooloose/nerdtree'
 Plugin 'vim-scripts/taglist.vim'
 Plugin 'haya14busa/incsearch.vim'
 Plugin 'justinmk/vim-sneak'
-Plugin 'rhysd/accelerated-jk'
 Plugin 'andymass/vim-matchup'
+Plugin 'Shougo/deoplete.nvim'
+Plugin 'roxma/nvim-yarp'
+Plugin 'roxma/vim-hug-neovim-rpc'
+Plugin 'Shougo/neoinclude.vim'
 call vundle#end()
+
+call deoplete#custom#option({
+            \ 'auto_complete_delay': 250,
+            \ 'smart_case': v:true,
+            \ 'camel_case': v:true,
+            \})
+
 
 
 " Colorscheme
@@ -178,7 +195,8 @@ nnoremap <leader>y "+y
 nnoremap q b
 nnoremap <S-q> <S-b>
 "Space for completion
-inoremap <C-@> <C-X><C-O>
+"inoremap <C-@> <C-X><C-O>
+inoremap <expr><C-@> deoplete#manual_complete()
 nnoremap <C-S-N> :NERDTreeToggle<CR>
 "Buffer navigation
 nnoremap <C-n> :bn<CR>
@@ -190,12 +208,13 @@ nnoremap <silent><CR> :noh<CR><CR>
 " ALE related keybinds
 nnoremap <leader>l :ALEFix<return>
 nnoremap <leader>d :call ale#definition#GoTo({})<return>
-nnoremap v :call ale#definition#GoTo({'open_in': 'horizontal-split'})<return>
+nnoremap <leader>v :call ale#definition#GoTo({'open_in': 'horizontal-split'})<return>
 nnoremap <leader>r :call ale#references#Find()<return>
 nnoremap <buffer> <leader>q :call ale#cursor#ShowCursorDetail()<cr>
+"inoremap <C-@> <esc><Plug>(ale_complete)<a>
 "Incsearch
-nnoremap /  <Plug>(incsearch-forward)
-nnoremap ?  <Plug>(incsearch-backward)
-nnoremap g/ <Plug>(incsearch-stay)
+"nnoremap /  <Plug>(incsearch-forward)
+"nnoremap ?  <Plug>(incsearch-backward)
+"nnoremap g/ <Plug>(incsearch-stay)
 "Taglist
 nnoremap <C-t> :TlistOpen<CR>
