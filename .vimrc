@@ -77,9 +77,6 @@ augroup END
 "Plugins
 
 
-"Autopairs
-let g:AutoPairsCenterLine = 1
-
 "ALE
 let g:ale_fix_on_save = 1
 let g:ale_set_balloons = 1
@@ -88,7 +85,7 @@ let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
                         \'javascript': ['eslint', 'remove_trailing_lines', 'trim_whitespace'],
                         \'haskell': ['brittany', 'remove_trailing_lines', 'trim_whitespace'],
                         \'c': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'python': ['reorder-python-imports', 'black', 'trim_whitespace'],
+                        \'python': ['isort', 'black', 'trim_whitespace'],
                         \'sh': ['shfmt']}
 let g:ale_linters_explicit = 1 " Only run the linters below
 let g:ale_linters = {'c': ['gcc', 'clangd'],
@@ -96,7 +93,8 @@ let g:ale_linters = {'c': ['gcc', 'clangd'],
             \'python': ['pyls', 'flake8'],
             \'gitcommit': ['gitlint'],
             \'sh': ['shellcheck'],
-            \'vim': ['vint']
+            \'vim': ['vint'],
+            \'javascript': ['eslint']
             \}
 "Less intrusive error/warning symbol
 let g:ale_sign_error = '>'
@@ -187,27 +185,54 @@ let g:polyglot_disabled = ['latex']
 let g:instant_markdown_slow = 1
 let g:instant_markdown_browser = 'firefox'
 
+"ctrlsf
+let g:ctrlsf_auto_focus = {
+    \ 'at': 'done',
+    \ 'duration_less_than': 1000
+    \ }
+let g:ctrlsf_default_root = 'project'
+let g:ctrlsf_default_view_mode = 'compact'
+
+"vim-multiple-cursors
+let g:multi_cursor_use_default_mapping=0
+
+" Default mapping
+let g:multi_cursor_start_word_key      = '<C-v>'
+let g:multi_cursor_select_all_word_key = '<A-n>'
+let g:multi_cursor_start_key           = 'g<C-v>'
+let g:multi_cursor_select_all_key      = 'g<A-v>'
+let g:multi_cursor_next_key            = '<C-v>'
+let g:multi_cursor_prev_key            = '<C-p>'
+let g:multi_cursor_skip_key            = '<C-x>'
+let g:multi_cursor_quit_key            = '<Esc>'
+
 " Load plugins
 call plug#begin()
-Plug 'tpope/vim-surround'
-Plug 'vim-airline/vim-airline'
-Plug 'raimondi/delimitmate'
-Plug 'lervag/vimtex', {'on_ft': 'tex'}
-Plug 'xuhdev/vim-latex-live-preview', {'on_ft': 'tex'}
-Plug 'scrooloose/nerdcommenter'
-Plug 'neovimhaskell/haskell-vim', {'on_ft': 'haskell'}
+"General plugins
 Plug 'dense-analysis/ale'
-Plug 'sheerun/vim-polyglot'
-Plug 'w0ng/vim-hybrid'
+Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'w0ng/vim-hybrid' "Colorscheme
+Plug 'andymass/vim-matchup' "Auto-insert closing brackets/quotes
+Plug 'raimondi/delimitmate' "Highlight matches for delimiters
+
+"Navigation
+Plug 'justinmk/vim-sneak'
+Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'vim-scripts/taglist.vim'
-Plug 'haya14busa/incsearch.vim'
-Plug 'justinmk/vim-sneak'
-Plug 'andymass/vim-matchup'
 Plug 'dyng/ctrlsf.vim'
-"Needs sudo npm -g install instant-markdown-d
-Plug 'suan/vim-instant-markdown', {'on_ft': 'markdown'}
+Plug 'tpope/vim-surround'
+Plug 'terryma/vim-multiple-cursors'
+
+"Language support
+Plug 'sheerun/vim-polyglot'
+Plug 'neovimhaskell/haskell-vim', {'on_ft': 'haskell'}
+Plug 'lervag/vimtex', {'on_ft': 'tex'}
+
+"Previewing
+Plug 'xuhdev/vim-latex-live-preview', {'on_ft': 'tex'}
+Plug 'suan/vim-instant-markdown', {'on_ft': 'markdown'} "needs sudo npm -g install instant-markdown-d
 call plug#end()
 
 
@@ -234,10 +259,12 @@ nnoremap <S-k> <C-u>
 "ctrl + s to save
 inoremap <C-s> <esc>:w<cr>
 nnoremap <C-s> :w<cr>
+"ctrl+backspace to backspace word
+inoremap <C-BS> <C-W>
 "ctrl + z to undo (if environment doesn't interpret it as background)
 imap <C-z> <Esc>:u<CR>a
 "Leader + y to yank to system clipboard
-nnoremap <leader>y "+y
+nmap <leader>y "+y
 "q instead of b for navigation
 nnoremap q b
 nnoremap <S-q> <S-b>
@@ -259,3 +286,5 @@ nnoremap <leader>r :call ale#references#Find()<return>
 nnoremap <buffer> <leader>q :call ale#cursor#ShowCursorDetail()<cr>
 "Taglist
 nnoremap <C-t> :TlistOpen<CR>
+"ctrlsf
+nmap  <C-x> <Plug>CtrlSFPrompt
