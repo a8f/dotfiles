@@ -86,7 +86,9 @@ let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
                         \'haskell': ['brittany', 'remove_trailing_lines', 'trim_whitespace'],
                         \'c': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
                         \'python': ['isort', 'black', 'trim_whitespace'],
-                        \'sh': ['shfmt']}
+                        \'sh': ['shfmt'],
+                        \'tex': ['chktex', 'latexindent'],
+                        \'json': ['fixjson']}
 let g:ale_linters_explicit = 1 " Only run the linters below
 let g:ale_linters = {'c': ['gcc', 'clangd'],
             \'haskell': ['ghc', 'hlint'],
@@ -94,20 +96,22 @@ let g:ale_linters = {'c': ['gcc', 'clangd'],
             \'gitcommit': ['gitlint'],
             \'sh': ['shellcheck'],
             \'vim': ['vint'],
-            \'javascript': ['eslint']
+            \'javascript': ['eslint'],
+            \'tex': ['chktex'],
+            \'json': ['jsonlint']
             \}
 "Less intrusive error/warning symbol
 let g:ale_sign_error = '>'
 let g:ale_sign_warning = '-'
 "Autocompletion
-let g:ale_completion_enabled = 1
+let g:ale_completion_enabled = 0
 let g:ale_completion_max_suggestions = 2000
 let g:ale_completion_delay = 150
 let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'int', 'for', 'in']
 " For some reason need this or OmniFunc gets reset for every buffer
-augroup AleOmniFunc
-    autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
-augroup END
+"augroup AleOmniFunc
+    "autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
+"augroup END
 
 "Python
 "flake8 options to match Black style
@@ -206,6 +210,13 @@ let g:multi_cursor_prev_key            = '<C-p>'
 let g:multi_cursor_skip_key            = '<C-x>'
 let g:multi_cursor_quit_key            = '<Esc>'
 
+"vim-latex-live-preview
+"let g:livepreview_cursorhold_recompile = 0
+
+"Highlight symbol under cursor on CursorHold
+au CursorHold * sil call CocActionAsync('highlight')
+au CursorHoldI * sil call CocActionAsync('showSignatureHelp')
+
 " Load plugins
 call plug#begin()
 "General plugins
@@ -215,6 +226,9 @@ Plug 'vim-airline/vim-airline-themes'
 Plug 'w0ng/vim-hybrid' "Colorscheme
 Plug 'andymass/vim-matchup' "Auto-insert closing brackets/quotes
 Plug 'raimondi/delimitmate' "Highlight matches for delimiters
+Plug 'neoclide/coc.nvim'
+"After installing coc do :call coc#util#install() then CocInstall
+"coc-python, ccls, coc-tsserver, coc-html
 
 "Navigation
 Plug 'justinmk/vim-sneak'
@@ -269,7 +283,8 @@ nmap <leader>y "+y
 nnoremap q b
 nnoremap <S-q> <S-b>
 "Space for completion
-inoremap <C-@> <C-X><C-O>
+"inoremap <C-@> <C-X><C-O>
+inoremap <silent><expr> <C-@> coc#refresh()
 nnoremap <C-S-N> :NERDTreeToggle<CR>
 "Buffer navigation
 nnoremap <C-n> :bn<CR>
@@ -280,11 +295,23 @@ inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
 nnoremap <silent><CR> :noh<CR><CR>
 "ALE related keybinds
 nnoremap <leader>l :ALEFix<return>
-nnoremap <leader>d :call ale#definition#GoTo({})<return>
-nnoremap <leader>v :call ale#definition#GoTo({'open_in': 'horizontal-split'})<return>
-nnoremap <leader>r :call ale#references#Find()<return>
-nnoremap <buffer> <leader>q :call ale#cursor#ShowCursorDetail()<cr>
+nnoremap <buffer><silent> <C-q> :call ale#cursor#ShowCursorDetail()<cr>
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
 "Taglist
 nnoremap <C-t> :TlistOpen<CR>
 "ctrlsf
 nmap  <C-x> <Plug>CtrlSFPrompt
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
+" Coc only does snippet and additional edit on confirm.
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" Use tab for trigger completion with characters ahead and navigate.
+" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+nn <silent> <C-k> :call CocActionAsync('doHover')<cr>
