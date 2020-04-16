@@ -25,6 +25,7 @@ set incsearch
 set completeopt=menuone,noselect,noinsert
 "Save persistent undo in ~/.vim/undo
 set undodir=~/.vim/undo
+set signcolumn=yes
 
 augroup Spellcheck
     autocmd FileType text setlocal spell
@@ -347,6 +348,9 @@ nmap <silent> <leader>r <Plug>(coc-references)
 inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 nn <silent> <C-k> :call CocActionAsync('doHover')<cr>
+" Navigate diagnostics
+nmap <silent> <S-w> <Plug>(coc-diagnostic-prev)
+nmap <silent> <S-e> <Plug>(coc-diagnostic-next)
 "Rename current word
 nmap <leader>rn <Plug>(coc-rename)
 "incsearch.vim remaps so nohl is set after actions
