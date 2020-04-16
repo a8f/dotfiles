@@ -23,9 +23,12 @@ set foldnestmax=2
 set hlsearch
 set incsearch
 set completeopt=menuone,noselect,noinsert
+"Save persistent undo in ~/.vim/undo
+set undodir=~/.vim/undo
 
 augroup Spellcheck
     autocmd FileType text setlocal spell
+    autocmd FileType tex setlocal spell
 augroup END
 
 "Keep all folds open when a file is opened
@@ -34,7 +37,7 @@ augroup OpenAllFoldsOnFileOpen
     autocmd BufRead * normal zR
 augroup END
 
-"Enable 24-bit colour (credit GitHub/joshdick)
+"Enable 24-bit colour (credit Github/joshdick)
 if (empty($TMUX))
   if (has('nvim'))
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1
@@ -73,6 +76,28 @@ augroup LineLengthIndicator
     autocmd FileType c,cpp,java setlocal colorcolumn=120
 augroup END
 
+""Delete trailing lines
+"function TrimEndLines()
+    "let save_cursor = getpos(".")
+    ":silent! %s#\($\n\s*\)\+\%$##
+    "call setpos('.', save_cursor)
+"endfunction
+"
+"au BufWritePre <buffer> call TrimEndLines()
+"
+"
+""Delete trailing whitespace on lines
+"function! <SID>StripTrailingWhitespaces()
+  "" save last search & cursor position
+  "let _s=@/
+  "let l = line(".")
+  "let c = col(".")
+  "%s/\s\+$//e
+  "let @/=_s
+  "call cursor(l, c)
+"endfunction
+"
+"autocmd BufWritePre * call <SID>StripTrailingWhitespaces()
 
 "Plugins
 
@@ -83,74 +108,59 @@ let g:ale_set_balloons = 1
 let g:ale_lint_on_changed = 'normal'
 let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
                         \'javascript': ['eslint', 'remove_trailing_lines', 'trim_whitespace'],
+                        \'javascriptreact': ['eslint', 'remove_trailing_lines', 'trim_whitespace'],
                         \'haskell': ['brittany', 'remove_trailing_lines', 'trim_whitespace'],
                         \'c': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
+                        \'cpp': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
                         \'python': ['isort', 'black', 'trim_whitespace'],
                         \'sh': ['shfmt'],
-                        \'tex': ['chktex', 'latexindent'],
-                        \'json': ['fixjson']}
+                        \'tex': ['latexindent'],
+                        \'json': ['fixjson'],
+                        \'html': ['html-beautify'],
+                        \}
 let g:ale_linters_explicit = 1 " Only run the linters below
 let g:ale_linters = {'c': ['gcc', 'clangd'],
+            \'cpp': ['g++', 'clangd'],
             \'haskell': ['ghc', 'hlint'],
-            \'python': ['pyls', 'flake8'],
+            \'python': ['flake8'],
             \'gitcommit': ['gitlint'],
             \'sh': ['shellcheck'],
             \'vim': ['vint'],
             \'javascript': ['eslint'],
-            \'tex': ['chktex'],
-            \'json': ['jsonlint']
+            \'javascriptreact': ['eslint'],
+            \'json': ['jsonlint'],
+            \'html': ['htmlhint']
             \}
 "Less intrusive error/warning symbol
 let g:ale_sign_error = '>'
 let g:ale_sign_warning = '-'
 "Autocompletion
-let g:ale_completion_enabled = 0
-let g:ale_completion_max_suggestions = 2000
-let g:ale_completion_delay = 150
-let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'int', 'for', 'in']
-" For some reason need this or OmniFunc gets reset for every buffer
-"augroup AleOmniFunc
-    "autocmd bufnewfile,bufread,bufenter * set omnifunc=ale#completion#OmniFunc
-"augroup END
+"let g:ale_completion_enabled = 0
+"let g:ale_completion_max_suggestions = 2000
+"let g:ale_completion_delay = 150
+"let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'for', 'in']
 
 "Python
 "flake8 options to match Black style
 let g:ale_python_flake8_options = '--max-line-length=88 --extend-ignore=E203'
-"pyls for completion only
-"since pyls doesn't allow settings a max line length for flake8
-"without a config file, just disable it and use ALE's flake8
-let g:ale_python_pyls_config = {
-      \   'pyls': {
-      \     'plugins': {
-      \       'pycodestyle': {
-      \         'enabled': v:false
-      \       },
-      \       'mccabe': {
-      \         'enabled': v:false
-      \       },
-      \       'autopep8': {
-      \         'enabled': v:false
-      \       },
-      \       'yapf': {
-      \         'enabled': v:false
-      \       },
-      \       'rope': {
-      \         'enabled': v:false
-      \       },
-      \       'flake8': {
-      \         'enabled': v:false
-      \       },
-      \     }
-      \   },
-      \ }
 
 "C
+let g:ale_uncrustify_per_type = 1
 let g:ale_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
+let g:ale_global_uncrustify_options = '-c ~/.config/uncrustify.cfg'
 let g:ale_c_parse_compile_commands = 1
 "Makefile after compile_commands to override
 let g:ale_c_parse_makefile = 1
 "No gcc options, load from makefile or compile_commands.json
+let g:ale_c_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
 let g:ale_c_gcc_options = ''
+"Same as C for C++
+let g:ale_cpp_uncrustify_options = '-l cpp'
+let g:ale_cpp_parse_compile_commands = 1
+"Makefile after compile_commands to override
+let g:ale_cpp_parse_makefile = 1
+"No gcc options, load from makefile or compile_commands.json
+let g:ale_cpp_gcc_options = ''
 
 "Airline
 let g:airline#extensions#ale#enabled=1
@@ -211,24 +221,40 @@ let g:multi_cursor_skip_key            = '<C-x>'
 let g:multi_cursor_quit_key            = '<Esc>'
 
 "vim-latex-live-preview
-"let g:livepreview_cursorhold_recompile = 0
+let g:livepreview_cursorhold_recompile = 0
 
 "Highlight symbol under cursor on CursorHold
 au CursorHold * sil call CocActionAsync('highlight')
 au CursorHoldI * sil call CocActionAsync('showSignatureHelp')
 
+"incsearch.vim
+let g:incsearch#auto_nohlsearch = 1
+
+"indentline
+let g:indentLine_char = '▏'
+"let g:indentLine_setConceal = 0
+
 " Load plugins
 call plug#begin()
-"General plugins
-Plug 'dense-analysis/ale'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
-Plug 'w0ng/vim-hybrid' "Colorscheme
-Plug 'andymass/vim-matchup' "Auto-insert closing brackets/quotes
-Plug 'raimondi/delimitmate' "Highlight matches for delimiters
+Plug 'tpope/vim-repeat' "Allow repeat for plugin commands
+
+"Code completion/linting
+"Plug 'dense-analysis/ale'
+"Plug '~/ale'
+Plug 'andymass/vim-matchup' "Highlight matching brackets
 Plug 'neoclide/coc.nvim'
 "After installing coc do :call coc#util#install() then CocInstall
 "coc-python, ccls, coc-tsserver, coc-html
+"Auto-insert matching brackets
+Plug 'tpope/vim-surround'
+Plug 'junegunn/vim-easy-align'
+
+"Interface
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'w0ng/vim-hybrid' "Colorscheme
+Plug 'yggdroot/indentline'
+Plug 'raimondi/delimitmate' "Highlight matches for delimiters
 
 "Navigation
 Plug 'justinmk/vim-sneak'
@@ -236,13 +262,16 @@ Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'vim-scripts/taglist.vim'
 Plug 'dyng/ctrlsf.vim'
-Plug 'tpope/vim-surround'
 Plug 'terryma/vim-multiple-cursors'
+Plug 'haya14busa/incsearch.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 
 "Language support
 Plug 'sheerun/vim-polyglot'
 Plug 'neovimhaskell/haskell-vim', {'on_ft': 'haskell'}
 Plug 'lervag/vimtex', {'on_ft': 'tex'}
+Plug 'goerz/jupytext.vim'
 
 "Previewing
 Plug 'xuhdev/vim-latex-live-preview', {'on_ft': 'tex'}
@@ -282,36 +311,56 @@ nmap <leader>y "+y
 "q instead of b for navigation
 nnoremap q b
 nnoremap <S-q> <S-b>
-"Space for completion
-"inoremap <C-@> <C-X><C-O>
-inoremap <silent><expr> <C-@> coc#refresh()
-nnoremap <C-S-N> :NERDTreeToggle<CR>
 "Buffer navigation
 nnoremap <C-n> :bn<CR>
 nnoremap <C-b> :bp<CR>
+"delete next word
+imap <C-q> <C-O>dw
+
+" Plugin-related keybinds
+
+
+"Space for completion
+"inoremap <C-@> <C-X><C-O>
+inoremap <silent><expr> <C-@> coc#refresh()
+nmap = :NERDTreeToggle<CR>
+"Easier comment toggle (vim interprets <C-/> as <C-_>)
+map <C-_> <plug>NERDCommenterToggle
 "When popup is visible use tab to cycle through suggestions
 inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
 "Press return again to disable highlighting after searching
 nnoremap <silent><CR> :noh<CR><CR>
-"ALE related keybinds
-nnoremap <leader>l :ALEFix<return>
+"ALE
+nnoremap <buffer><silent> <C-p> :ALEFix<return>
 nnoremap <buffer><silent> <C-q> :call ale#cursor#ShowCursorDetail()<cr>
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
 "Taglist
 nnoremap <C-t> :TlistOpen<CR>
 "ctrlsf
 nmap  <C-x> <Plug>CtrlSFPrompt
+"coc
+nmap <silent> <leader>d <Plug>(coc-definition)
+nmap <silent> <leader>y <Plug>(coc-type-definition)
+nmap <silent> <leader>i <Plug>(coc-implementation)
+nmap <silent> <leader>r <Plug>(coc-references)
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
 " Coc only does snippet and additional edit on confirm.
 inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-" Use tab for trigger completion with characters ahead and navigate.
-" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 nn <silent> <C-k> :call CocActionAsync('doHover')<cr>
+"Rename current word
+nmap <leader>rn <Plug>(coc-rename)
+"incsearch.vim remaps so nohl is set after actions
+map /  <Plug>(incsearch-forward)
+map ?  <Plug>(incsearch-backward)
+map g/ <Plug>(incsearch-stay)
+map n  <Plug>(incsearch-nohl-n)
+map N  <Plug>(incsearch-nohl-N)
+map *  <Plug>(incsearch-nohl-*)
+map #  <Plug>(incsearch-nohl-#)
+map g* <Plug>(incsearch-nohl-g*)
+map g# <Plug>(incsearch-nohl-g#)
+"vim-easy-align
+" Start interactive EasyAlign in visual mode (e.g. vipga)
+xmap ga <Plug>(EasyAlign)
+" Start interactive EasyAlign for a motion/text object (e.g. gaip)
+nmap ga <Plug>(EasyAlign)
