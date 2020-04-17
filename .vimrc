@@ -24,6 +24,7 @@ set hlsearch
 set incsearch
 set completeopt=menuone,noselect,noinsert
 "Save persistent undo in ~/.vim/undo
+set undofile
 set undodir=~/.vim/undo
 set signcolumn=yes
 
@@ -74,7 +75,7 @@ augroup END
 "Max line length column indicator
 augroup LineLengthIndicator
     autocmd FileType python setlocal colorcolumn=88
-    autocmd FileType c,cpp,java setlocal colorcolumn=120
+    autocmd FileType c,cpp,java,javascript,javascriptreact setlocal colorcolumn=120
 augroup END
 
 ""Delete trailing lines
@@ -88,88 +89,27 @@ augroup END
 "
 "
 ""Delete trailing whitespace on lines
-"function! <SID>StripTrailingWhitespaces()
-  "" save last search & cursor position
-  "let _s=@/
-  "let l = line(".")
-  "let c = col(".")
-  "%s/\s\+$//e
-  "let @/=_s
-  "call cursor(l, c)
-"endfunction
-"
-"autocmd BufWritePre * call <SID>StripTrailingWhitespaces()
+function! <SID>StripTrailingWhitespaces()
+  " save last search & cursor position
+  let _s=@/
+  let l = line(".")
+  let c = col(".")
+  %s/\s\+$//e
+  let @/=_s
+  call cursor(l, c)
+endfunction
+
+autocmd BufWritePre * call <SID>StripTrailingWhitespaces()
 
 "Plugins
 
-
-"ALE
-let g:ale_fix_on_save = 1
-let g:ale_set_balloons = 1
-let g:ale_lint_on_changed = 'normal'
-let g:ale_fixers = {'*': ['remove_trailing_lines','trim_whitespace'],
-                        \'javascript': ['eslint', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'javascriptreact': ['eslint', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'haskell': ['brittany', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'c': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'cpp': ['uncrustify', 'remove_trailing_lines', 'trim_whitespace'],
-                        \'python': ['isort', 'black', 'trim_whitespace'],
-                        \'sh': ['shfmt'],
-                        \'tex': ['latexindent'],
-                        \'json': ['fixjson'],
-                        \'html': ['html-beautify'],
-                        \}
-let g:ale_linters_explicit = 1 " Only run the linters below
-let g:ale_linters = {'c': ['gcc', 'clangd'],
-            \'cpp': ['g++', 'clangd'],
-            \'haskell': ['ghc', 'hlint'],
-            \'python': ['flake8'],
-            \'gitcommit': ['gitlint'],
-            \'sh': ['shellcheck'],
-            \'vim': ['vint'],
-            \'javascript': ['eslint'],
-            \'javascriptreact': ['eslint'],
-            \'json': ['jsonlint'],
-            \'html': ['htmlhint']
-            \}
-"Less intrusive error/warning symbol
-let g:ale_sign_error = '>'
-let g:ale_sign_warning = '-'
-"Autocompletion
-"let g:ale_completion_enabled = 0
-"let g:ale_completion_max_suggestions = 2000
-"let g:ale_completion_delay = 150
-"let g:ale_completion_excluded_words = ['if', 'else', 'while', 'break', 'continue', 'return', 'switch', 'char', 'for', 'in']
-
-"Python
-"flake8 options to match Black style
-let g:ale_python_flake8_options = '--max-line-length=88 --extend-ignore=E203'
-
-"C
-let g:ale_uncrustify_per_type = 1
-let g:ale_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
-let g:ale_global_uncrustify_options = '-c ~/.config/uncrustify.cfg'
-let g:ale_c_parse_compile_commands = 1
-"Makefile after compile_commands to override
-let g:ale_c_parse_makefile = 1
-"No gcc options, load from makefile or compile_commands.json
-let g:ale_c_c_uncrustify_options = '-c ~/.config/uncrustify.cfg'
-let g:ale_c_gcc_options = ''
-"Same as C for C++
-let g:ale_cpp_uncrustify_options = '-l cpp'
-let g:ale_cpp_parse_compile_commands = 1
-"Makefile after compile_commands to override
-let g:ale_cpp_parse_makefile = 1
-"No gcc options, load from makefile or compile_commands.json
-let g:ale_cpp_gcc_options = ''
-
 "Airline
-let g:airline#extensions#ale#enabled=1
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tabs_label = ''
 let g:airline#extensions#tabline#buffers_label = ''
 let g:airline#extensions#tabline#tab_min_count = 2
 let g:airline#extensions#tabline#buffer_min_count = 2
+let g:airline#extensions#coc#enabled = 1
 let g:airline_powerline_fonts = 1
 
 "Nerdtree/Nerdcommenter
@@ -240,14 +180,11 @@ call plug#begin()
 Plug 'tpope/vim-repeat' "Allow repeat for plugin commands
 
 "Code completion/linting
-"Plug 'dense-analysis/ale'
-"Plug '~/ale'
 Plug 'andymass/vim-matchup' "Highlight matching brackets
 Plug 'neoclide/coc.nvim'
 "After installing coc do :call coc#util#install() then CocInstall
-"coc-python, ccls, coc-tsserver, coc-html
-"Auto-insert matching brackets
-Plug 'tpope/vim-surround'
+"coc-python, coc-ccls, coc-tsserver, coc-html, coc-json, coc-eslint,
+"coc-snippets, coc-pairs, coc-java, etc.
 Plug 'junegunn/vim-easy-align'
 
 "Interface
@@ -310,11 +247,11 @@ imap <C-z> <Esc>:u<CR>a
 "Leader + y to yank to system clipboard
 nmap <leader>y "+y
 "q instead of b for navigation
-nnoremap q b
-nnoremap <S-q> <S-b>
+"nnoremap q b
+"nnoremap <S-q> <S-b>
 "Buffer navigation
-nnoremap <C-n> :bn<CR>
-nnoremap <C-b> :bp<CR>
+nnoremap <C-m> :bn<CR>
+nnoremap <C-n> :bp<CR>
 "delete next word
 imap <C-q> <C-O>dw
 
@@ -331,9 +268,6 @@ map <C-_> <plug>NERDCommenterToggle
 inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
 "Press return again to disable highlighting after searching
 nnoremap <silent><CR> :noh<CR><CR>
-"ALE
-nnoremap <buffer><silent> <C-p> :ALEFix<return>
-nnoremap <buffer><silent> <C-q> :call ale#cursor#ShowCursorDetail()<cr>
 "Taglist
 nnoremap <C-t> :TlistOpen<CR>
 "ctrlsf
@@ -349,10 +283,14 @@ inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 nn <silent> <C-k> :call CocActionAsync('doHover')<cr>
 " Navigate diagnostics
-nmap <silent> <S-w> <Plug>(coc-diagnostic-prev)
-nmap <silent> <S-e> <Plug>(coc-diagnostic-next)
+nmap <silent> <leader>q <Plug>(coc-diagnostic-prev)
+nmap <silent> q <Plug>(coc-diagnostic-next)
 "Rename current word
 nmap <leader>rn <Plug>(coc-rename)
+" Apply AutoFix to problem on the current line.
+nmap <leader>f  <Plug>(coc-fix-current)
+
+
 "incsearch.vim remaps so nohl is set after actions
 map /  <Plug>(incsearch-forward)
 map ?  <Plug>(incsearch-backward)
