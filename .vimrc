@@ -184,7 +184,8 @@ Plug 'andymass/vim-matchup' "Highlight matching brackets
 Plug 'neoclide/coc.nvim'
 "After installing coc do :call coc#util#install() then CocInstall
 "coc-python, coc-ccls, coc-tsserver, coc-html, coc-json, coc-eslint,
-"coc-snippets, coc-pairs, coc-java, etc.
+"coc-snippets, coc-java, etc.
+Plug 'tpope/vim-surround'
 Plug 'junegunn/vim-easy-align'
 
 "Interface
@@ -273,22 +274,22 @@ nnoremap <C-t> :TlistOpen<CR>
 "ctrlsf
 nmap  <C-x> <Plug>CtrlSFPrompt
 "coc
-nmap <silent> <leader>d <Plug>(coc-definition)
-nmap <silent> <leader>y <Plug>(coc-type-definition)
-nmap <silent> <leader>i <Plug>(coc-implementation)
-nmap <silent> <leader>r <Plug>(coc-references)
+nnoremap <silent> <leader>d <Plug>(coc-definition)
+nnoremap <silent> <leader>y <Plug>(coc-type-definition)
+nnoremap <silent> <leader>i <Plug>(coc-implementation)
+nnoremap <silent> <leader>r <Plug>(coc-references)
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
 " Coc only does snippet and additional edit on confirm.
 inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 nn <silent> <C-k> :call CocActionAsync('doHover')<cr>
 " Navigate diagnostics
-nmap <silent> <leader>q <Plug>(coc-diagnostic-prev)
-nmap <silent> q <Plug>(coc-diagnostic-next)
+nnoremap <silent> [g <Plug>(coc-diagnostic-prev)
+nnoremap <silent> ]g <Plug>(coc-diagnostic-next)
 "Rename current word
-nmap <leader>rn <Plug>(coc-rename)
-" Apply AutoFix to problem on the current line.
-nmap <leader>f  <Plug>(coc-fix-current)
+nnoremap <leader>rn <Plug>(coc-rename)
+nnoremap q <Plug>(coc-codeaction)
+nnoremap <leader>f  <Plug>(coc-fix-current)
 
 
 "incsearch.vim remaps so nohl is set after actions
