@@ -1,4 +1,9 @@
-"General config
+"************************************"
+"************************************"
+"********** General config **********"
+"************************************"
+"************************************"
+
 filetype plugin indent on
 syntax on
 set nocompatible
@@ -28,6 +33,7 @@ set undofile
 set undodir=~/.vim/undo
 set signcolumn=yes
 
+"Enable spellcheck
 augroup Spellcheck
     autocmd FileType text setlocal spell
     autocmd FileType tex setlocal spell
@@ -39,7 +45,7 @@ augroup OpenAllFoldsOnFileOpen
     autocmd BufRead * normal zR
 augroup END
 
-"Enable 24-bit colour (credit Github/joshdick)
+"Enable 24-bit colour
 if (empty($TMUX))
   if (has('nvim'))
   let $NVIM_TUI_ENABLE_TRUE_COLOR=1
@@ -78,19 +84,9 @@ augroup LineLengthIndicator
     autocmd FileType c,cpp,java,javascript,javascriptreact setlocal colorcolumn=120
 augroup END
 
-""Delete trailing lines
-"function TrimEndLines()
-    "let save_cursor = getpos(".")
-    ":silent! %s#\($\n\s*\)\+\%$##
-    "call setpos('.', save_cursor)
-"endfunction
-"
-"au BufWritePre <buffer> call TrimEndLines()
-"
-"
-""Delete trailing whitespace on lines
+"Delete trailing whitespace on lines
 function! <SID>StripTrailingWhitespaces()
-  " save last search & cursor position
+  " save cursor location to return to later
   let _s=@/
   let l = line(".")
   let c = col(".")
@@ -101,7 +97,13 @@ endfunction
 
 autocmd BufWritePre * call <SID>StripTrailingWhitespaces()
 
-"Plugins
+
+"***********************************"
+"***********************************"
+"********** Plugin config **********"
+"***********************************"
+"***********************************"
+
 
 "Airline
 let g:airline#extensions#tabline#enabled = 1
@@ -175,6 +177,21 @@ let g:incsearch#auto_nohlsearch = 1
 let g:indentLine_char = '▏'
 "let g:indentLine_setConceal = 0
 
+
+"**********************************"
+"**********************************"
+"********** Load plugins **********"
+"**********************************"
+"**********************************"
+
+
+"Install vim-plug
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
 " Load plugins
 call plug#begin()
 Plug 'tpope/vim-repeat' "Allow repeat for plugin commands
@@ -218,7 +235,11 @@ Plug 'suan/vim-instant-markdown', {'on_ft': 'markdown'} "needs sudo npm -g insta
 call plug#end()
 
 
-" Colorscheme
+"*********************************"
+"*********************************"
+"********** Colorscheme **********"
+"*********************************"
+"*********************************"
 
 
 colorscheme hybrid
@@ -227,7 +248,11 @@ let g:airline_theme = 'hybrid'
 hi Normal guibg=NONE ctermbg=NONE
 
 
-"Keybinds
+"******************************"
+"******************************"
+"********** Keybinds **********"
+"******************************"
+"******************************"
 
 
 "Auto-indent when using a
@@ -255,9 +280,6 @@ nnoremap <C-m> :bn<CR>
 nnoremap <C-n> :bp<CR>
 "delete next word
 imap <C-q> <C-O>dw
-
-" Plugin-related keybinds
-
 
 "Space for completion
 "inoremap <C-@> <C-X><C-O>
@@ -290,7 +312,6 @@ nnoremap <silent> ]g <Plug>(coc-diagnostic-next)
 nnoremap <leader>rn <Plug>(coc-rename)
 nnoremap q <Plug>(coc-codeaction)
 nnoremap <leader>f  <Plug>(coc-fix-current)
-
 
 "incsearch.vim remaps so nohl is set after actions
 map /  <Plug>(incsearch-forward)
